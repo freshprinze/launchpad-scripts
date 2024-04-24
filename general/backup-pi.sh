@@ -89,13 +89,13 @@ if [ ! -f $backup_file_name ]; then
 	result=$(sudo image-backup --initial $backup_file_name,,5000)
 	exit_if_error $? $LINENO "failed to generate intial backup $backup_file_name" "$result"
 
-	return 0
+	exit 0
 fi
 
 # create backup
 echo "creating image for $(hostname)"
 
-result=$(image-backup $backup_file_name)
+result=$(sudo image-backup $backup_file_name)
 exit_if_error $? $LINENO "failed to generate backup $backup_file_name" "$result"
 
 msg="successfully created backup $backup_file_name"
