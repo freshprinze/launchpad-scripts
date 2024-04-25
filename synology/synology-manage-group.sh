@@ -1,6 +1,6 @@
 #!/bin/sh 
 
-set -eu
+set -u
 
 ###################################################################################
 # import utility functions
@@ -69,15 +69,41 @@ if [ $(sudo synogroup --get "${group_name}" > /dev/null 2>&1; echo $?) -ne 0 ]; 
 	exit 0
 fi
 
+echo "updating group ${group_name} with ${managed_user_name}"
+
 # get list of current users in group admistrators
 current_members=$(sudo synogroup --get ${group_name} | grep --perl-regexp --only-matching '(?<=^\d:\[).*(?=\]$)' 2>&1)
-exit_if_error $? $LINENO "failed get current members for ${group_name}" "$current_members"
+
+if [[ -z "${current_members[@]-}" ]]; then
+	echo "adding ${managed_user_name} as the only member of ${group_name}"
+
+	result=$(sudo synogroup --member ${group_name} ${managed_user_name} > /dev/null 2>&1)
+	exit_if_error $? $LINENO "failed to add ${managed_user_name} to group ${group_name}" "$result"
+
+	exit 0
+fi
 
 members=""
+already_member=false
+
+echo "fetched current members of group ${group_name}"
 
 for member in ${current_members};do
+
+	if [ ${member} == ${managed_user_name} ]; then
+		already_member=true
+		break
+	fi
+
 	members="${members} ${member}"
 done
+
+if $already_member; then
+	echo "user ${managed_user_name} is already a member of ${group_name}"
+	exit 0
+fi
+
+echo "adding ${managed_user_name} as a member of ${group_name}"
 
 result=$(sudo synogroup --member ${group_name} ${members} ${managed_user_name} > /dev/null 2>&1)
 exit_if_error $? $LINENO "failed to add ${managed_user_name} to group ${group_name}" "$result"
