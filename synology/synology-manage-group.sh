@@ -60,8 +60,17 @@ if [ -z "$group_name" ]; then
 	return_msg
 fi
 
+if [ $(sudo synogroup --get "${group_name}" > /dev/null 2>&1; echo $?) -ne 0 ]; then
+	echo "creating group ${group_name} as it doesn't exist"
+
+	result=$(sudo synogroup --add ${group_name} ${managed_user_name} > /dev/null 2>&1)
+	exit_if_error $? $LINENO "failed create group ${group_name}" "$result"
+
+	exit 0
+fi
+
 # get list of current users in group admistrators
-current_members=$(sudo synogroup --get ${group_name} | grep --perl-regexp --only-matching '(?<=^\d:\[).*(?=\]$)' > /dev/null 2>&1)
+current_members=$(sudo synogroup --get ${group_name} | grep --perl-regexp --only-matching '(?<=^\d:\[).*(?=\]$)' 2>&1)
 exit_if_error $? $LINENO "failed get current members for ${group_name}" "$current_members"
 
 members=""

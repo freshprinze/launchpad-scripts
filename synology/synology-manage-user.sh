@@ -48,7 +48,7 @@ disable_output
 enable_output
 
 managed_user_name=$1
-managed_user_password="${$2:-}"
+managed_user_password=$2
 
 if [ -z "$managed_user_name" ]; then
 	msg="User Name is required. Exiting"
