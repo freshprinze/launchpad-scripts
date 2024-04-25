@@ -48,19 +48,29 @@ disable_output
 enable_output
 
 managed_user_name=$1
-managed_user_password="${$2:-}"
+group_name=$2
 
 if [ -z "$managed_user_name" ]; then
 	msg="User Name is required. Exiting"
 	return_msg
 fi
 
-if [ $(sudo synouser --get "${managed_user_name}" > /dev/null 2>&1; echo $?) -eq 0 ]; then
-	echo "user ${managed_user_name} already exists"
-	exit 0
+if [ -z "$group_name" ]; then
+	msg="Group Name is required. Exiting"
+	return_msg
 fi
 
-result=$(sudo synouser --add "${managed_user_name}" "${managed_user_password}" "" 0 "" 0 > /dev/null 2>&1)
-exit_if_error $? $LINENO "failed create ${managed_user_name}" "$result"
+# get list of current users in group admistrators
+current_members=$(sudo synogroup --get ${group_name} | grep --perl-regexp --only-matching '(?<=^\d:\[).*(?=\]$)' > /dev/null 2>&1)
+exit_if_error $? $LINENO "failed get current members for ${group_name}" "$current_members"
+
+members=""
+
+for member in ${current_members};do
+	members="${members} ${member}"
+done
+
+result=$(sudo synogroup --member ${group_name} ${members} ${managed_user_name} > /dev/null 2>&1)
+exit_if_error $? $LINENO "failed to add ${managed_user_name} to group ${group_name}" "$result"
 
 exit 0
