@@ -99,7 +99,7 @@ for member in ${current_members};do
 done
 
 if $already_member; then
-	echo "user ${managed_user_name} is already a member of ${group_name}"
+	echo "user is already a member of group=${group_name}, username=${managed_user_name}"
 	exit 0
 fi
 

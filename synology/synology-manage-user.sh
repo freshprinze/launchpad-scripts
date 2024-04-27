@@ -56,7 +56,7 @@ if [ -z "$managed_user_name" ]; then
 fi
 
 if [ $(sudo synouser --get "${managed_user_name}" > /dev/null 2>&1; echo $?) -eq 0 ]; then
-	echo "user ${managed_user_name} already exists"
+	echo "user already exists. username=${managed_user_name}"
 	exit 0
 fi
 
