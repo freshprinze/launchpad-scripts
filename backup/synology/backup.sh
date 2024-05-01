@@ -62,14 +62,16 @@ if [ ! -f "$exclude_from" ]; then
 	return_msg
 fi
 
+source /etc/restic-env
+
 # check if repository is initialized
-result=$(source /etc/restic-env; restic cat config > /dev/null 2>&1)
+result=$(sudo -E ./restic cat config > /dev/null 2>&1)
 exit_if_error $? $LINENO "repository is not initialized. $RESTIC_REPOSITORY" "$result"
 
 # perform backup
-result=$(source /etc/restic-env; restic backup --files-from $include_from --exclude-file $exclude_from > /dev/null 2>&1)
+result=$(sudo -E ./restic backup --files-from $include_from --exclude-file $exclude_from > /dev/null 2>&1)
 
-case $? in
+case "$?" in
 
 	0)
 	msg="successfully backed up files to $RESTIC_REPOSITORY"

@@ -47,8 +47,10 @@ exit_if_error() {
 disable_output
 enable_output
 
+source /etc/restic-env
+
 # check if repository is initialized
-result=$(source /etc/restic-env; restic cat config > /dev/null 2>&1)
+result=$(sudo -E restic cat config > /dev/null 2>&1)
 
 if [ $? == 0 ]; then
 	msg="repository is already initialized. $RESTIC_REPOSITORY"
@@ -57,7 +59,7 @@ if [ $? == 0 ]; then
 fi
 
 # initialized repository
-result=$(source /etc/restic-env; restic init > 2>&1)
+result=$(sudo -E restic init > /dev/null 2>&1)
 
 case $? in
 
