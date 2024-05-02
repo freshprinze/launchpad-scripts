@@ -47,8 +47,11 @@ exit_if_error() {
 disable_output
 enable_output
 
-include_from=include.txt
-exclude_from=exclude.txt
+script_abs_path=$(readlink -f "$0")
+script_dir=$(dirname "${script_abs_path}")
+
+include_from="${script_dir}/include.txt"
+exclude_from="${script_dir}/exclude.txt"
 
 if [ ! -f "$include_from" ]; then
 	msg="include from file $include_from is missing. exiting"
@@ -65,11 +68,16 @@ fi
 source /etc/restic-env
 
 # check if repository is initialized
-result=$(sudo -E ./restic cat config > /dev/null 2>&1)
-exit_if_error $? $LINENO "repository is not initialized. $RESTIC_REPOSITORY" "$result"
+resut=$(sudo -E restic cat config > /dev/null 2>&1)
+
+if [ $? != 0 ]; then
+	msg="repository is not initialized. $RESTIC_REPOSITORY"
+	rc=$?
+	return_msg
+fi
 
 # perform backup
-result=$(sudo -E ./restic backup --files-from $include_from --exclude-file $exclude_from > /dev/null 2>&1)
+result=$(sudo -E restic backup --files-from $include_from --exclude-file $exclude_from > /dev/null 2>&1)
 
 case "$?" in
 
